@@ -1,0 +1,5 @@
+env/
+sodoku.code-workspace
+test.py
+.vscode/
+__pycache__/

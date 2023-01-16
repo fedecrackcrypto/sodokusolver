@@ -14,6 +14,20 @@ class Variable():
     
     def __str__(self) -> str:
         return f"This variable has the number {self.number} in the position {self.i}, {self.j}"
+    
+    def __eq__(self, other):
+        return (
+            (self.i == other.i) and
+            (self.j == other.j) and
+            (self.number == other.number) and
+            (self.grid == other.grid)
+        )
+
+    def __repr__(self):
+        return f"Variable(i:{self.i}, j:{self.j}, number:{self.number}, grid:{self.grid})"
+
+    def __hash__(self):
+        return hash((self.i, self.j, self.number, self.grid))
 
 
 
@@ -40,6 +54,7 @@ class Sodoku():
 
     def __str__(self):
         return f"{self.board}"
+        
 
     def change_value(self, i: int, j: int, number: int) -> None:
         """
@@ -56,17 +71,24 @@ class Sodoku():
         """       
         self.board[i,j].number = None
 
-    def get_neighbors(self, i: int, j: int) -> set:
+    def get_neighbors(self, var: Variable) -> set:
         """
         Defining neighbors as any variable that has a constraint with the variable in the [i,j] position.
         Return a list of all the neighbors of the variable in the [i,j] position.
         """
         neighbors = set()
-        var = self.board[i][j]
         for x in range(self.size):
             for y in range(self.size):
-                y = self.board[x][y]
-                if (var.i == y.i or var.j == y.j or var.grid == y.grid) and var != y:
-                    neighbors.add(y)
+                var_neighbor = self.board[x][y]
+                if (var.i == var_neighbor.i or var.j == var_neighbor.j or var.grid == var_neighbor.grid) and var != var_neighbor:
+                    neighbors.add(var_neighbor)
         return neighbors
-            
+    
+    def are_neighbors(self, var_x: Variable, var_y: Variable):
+        """
+        Returns True if the variables in the position [i,j] and [i_neighbor,j_neighbor] are neighbors,
+        otherwise False.
+        """
+        if (var_x.i == var_y.i or var_x.j == var_y.j or var_x.grid == var_y.grid) and var_x != var_y:
+            return True
+        return False  

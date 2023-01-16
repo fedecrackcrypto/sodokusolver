@@ -2,6 +2,7 @@ import pygame
 import sys
 import time
 from sodoku import *
+from main import *
 
 pygame.init()
 
@@ -52,6 +53,8 @@ while True:
         pygame.draw.rect(screen, WHITE, play16Button)
         screen.blit(play9, play16Rect)
 
+        
+
         #Check for button click
         click, _, _ = pygame.mouse.get_pressed()
         if click == 1:
@@ -60,6 +63,36 @@ while True:
                 time.sleep(0.2)
                 grid_size = 9
                 sodoku = Sodoku(grid_size)
+                sodoku.change_value(0,1,6)
+                sodoku.change_value(0,4,7)
+                sodoku.change_value(0,7,2)
+                sodoku.change_value(1,4,8)
+                sodoku.change_value(1,5,3)
+                sodoku.change_value(1,7,1)
+                sodoku.change_value(1,8,6)
+                sodoku.change_value(2,0,9)
+                sodoku.change_value(2,3,4)
+                sodoku.change_value(2,7,7)
+                sodoku.change_value(3,2,5)
+                sodoku.change_value(3,3,6)
+                sodoku.change_value(3,4,4)
+                sodoku.change_value(4,0,8)
+                sodoku.change_value(4,1,1)
+                sodoku.change_value(4,6,5)
+                sodoku.change_value(5,5,2)
+                sodoku.change_value(5,6,3)
+                sodoku.change_value(6,1,9)
+                sodoku.change_value(6,2,3)
+                sodoku.change_value(6,5,1)
+                sodoku.change_value(6,7,8)
+                sodoku.change_value(7,1,7)
+                sodoku.change_value(7,6,2)
+                sodoku.change_value(8,2,4)
+                sodoku.change_value(8,3,5)
+                sodoku.change_value(8,4,6)
+                sodoku.change_value(8,5,9)
+                sodoku.change_value(8,6,1)
+
 
                 #Show 9x9 grid
             elif play16Button.collidepoint(mouse):
@@ -74,8 +107,19 @@ while True:
     else:    
   
     # Board parameters
-    
+
+        # AI Move button
         BOARD_PADDING = 20
+        solve_button = pygame.Rect(
+            (2 / 3) * width + BOARD_PADDING, (1 / 3) * height - 50,
+            (width / 3) - BOARD_PADDING * 2, 50
+        )
+        buttonText = mediumFont.render("Solve Sodoku", True, BLACK)
+        buttonRect = buttonText.get_rect()
+        buttonRect.center = solve_button.center
+        pygame.draw.rect(screen, WHITE, solve_button)
+        screen.blit(buttonText, buttonRect)
+    
         board_width = ((2 / 3) * width) - (BOARD_PADDING * 2)
         board_height = height - (BOARD_PADDING * 2)
         cell_size = int(min(board_width / grid_size, board_height / grid_size))
@@ -128,10 +172,17 @@ while True:
 
         #check for user left click
         if left == 1:
-            print("left click")
             mouse = pygame.mouse.get_pos()
             #check for user selecting a cell
-            if True:
+            if solve_button.collidepoint(mouse):
+                solver = SodokuSolver(sodoku)
+                solution = solver.solve()
+                for variable in solution:
+                    print(variable)
+                    sodoku.change_value(variable.i,variable.j,solution[variable])
+
+
+            elif True:
                 for i in range(grid_size):
                     for j in range(grid_size):
                         if grid[i][j].collidepoint(mouse):
@@ -142,7 +193,8 @@ while True:
                             pygame.display.flip()
         
         #User has selected a cell to input a number
-        while selected_cell is not None:
+        number = None
+        while selected_cell is not None:            
             for event in pygame.event.get():                
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_BACKSPACE or event.key == pygame.K_DELETE: 
@@ -158,6 +210,8 @@ while True:
                                 number,
                                 True, BLACK
                             )
+                            pygame.draw.rect(screen, GRAY, selected_cell)
+                            pygame.draw.rect(screen, (47,56,78), selected_cell, 3)
                             numberTextRect = numberRect.get_rect()
                             numberTextRect.center = selected_cell.center
                             screen.blit(numberRect, numberTextRect)
@@ -166,7 +220,8 @@ while True:
                     elif event.unicode.isdigit() and not first_key:
                         if int(number + event.unicode) in range(1, grid_size+1):
                             number = number + event.unicode
-                        else:
+                            first_key = True
+                        elif int(event.unicode) in range(1, grid_size+1):
                             number = event.unicode
                         numberRect = smallFont.render(
                             number,
@@ -179,6 +234,7 @@ while True:
                         screen.blit(numberRect, numberTextRect)
                         pygame.display.flip()
                     elif event.key == pygame.K_RETURN:
-                        sodoku.change_value(selected_i, selected_j, int(number))
+                        if number is not None:
+                            sodoku.change_value(selected_i, selected_j, int(number))
                         selected_cell = None
                         break
